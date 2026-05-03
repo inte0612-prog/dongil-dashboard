@@ -2,12 +2,36 @@
 
 import { useFilter } from "@/hooks/useFilter";
 import { LINE_OPTIONS } from "@/lib/constants";
+import { getPresetRanges } from "@/lib/utils/dateUtils";
+import { cn } from "@/lib/utils";
+
+const PRESETS = getPresetRanges();
 
 export default function GlobalFilter() {
   const { start, end, line, setFilter, resetFilter } = useFilter();
 
+  const activePreset = PRESETS.find((p) => p.start === start && p.end === end)?.label ?? null;
+
   return (
-    <div className="flex items-center gap-2">
+    <div className="flex flex-wrap items-center gap-2">
+      {/* 프리셋 버튼 */}
+      <div className="flex rounded-md border bg-background">
+        {PRESETS.map((p) => (
+          <button
+            key={p.label}
+            onClick={() => setFilter({ start: p.start, end: p.end })}
+            className={cn(
+              "px-2.5 py-1.5 text-xs font-medium transition-colors first:rounded-l-md last:rounded-r-md",
+              activePreset === p.label
+                ? "bg-primary text-primary-foreground"
+                : "text-muted-foreground hover:bg-accent hover:text-accent-foreground"
+            )}
+          >
+            {p.label}
+          </button>
+        ))}
+      </div>
+
       <input
         type="date"
         value={start}
