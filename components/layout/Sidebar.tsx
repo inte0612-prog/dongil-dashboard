@@ -39,9 +39,12 @@ export default function Sidebar() {
   return (
     <aside className="flex w-60 shrink-0 flex-col border-r bg-sidebar">
       <div className="flex h-14 items-center border-b px-5">
-        <span className="text-sm font-semibold tracking-tight text-sidebar-foreground">
+        <Link
+          href="/dashboard"
+          className="text-sm font-semibold tracking-tight text-sidebar-foreground transition-opacity hover:opacity-70"
+        >
           동일산업 생산 대시보드
-        </span>
+        </Link>
       </div>
 
       <nav className="flex-1 overflow-y-auto py-3">
