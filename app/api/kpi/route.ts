@@ -3,6 +3,8 @@ import { NextRequest, NextResponse } from "next/server";
 import { toStartOfDay, toEndOfDay } from "@/lib/utils/dateUtils";
 import { KpiData } from "@/types";
 
+const MAX_ROWS = 1_000_000;
+
 export async function GET(req: NextRequest) {
   const { searchParams } = req.nextUrl;
   const start = searchParams.get("start");
@@ -15,56 +17,64 @@ export async function GET(req: NextRequest) {
 
   const supabase = await createClient();
 
-  let query = supabase
+  // 전체 건수 (head: true — 데이터 미전송, 빠름)
+  let countQuery = supabase
     .from("production_records")
-    .select("pyung, line, registered_at")
+    .select("*", { count: "exact", head: true })
     .gte("registered_at", toStartOfDay(start))
     .lte("registered_at", toEndOfDay(end));
+  if (line !== "all") countQuery = countQuery.eq("line", line);
 
-  if (line !== "all") query = query.eq("line", line);
+  // 평수·라인 집계용 데이터
+  let dataQuery = supabase
+    .from("production_records")
+    .select("pyung, line")
+    .gte("registered_at", toStartOfDay(start))
+    .lte("registered_at", toEndOfDay(end))
+    .limit(MAX_ROWS);
+  if (line !== "all") dataQuery = dataQuery.eq("line", line);
 
-  const { data, error } = await query;
-  if (error) return NextResponse.json({ error: error.message }, { status: 500 });
+  const [{ count: totalCount, error: e1 }, { data, error: e2 }] = await Promise.all([
+    countQuery,
+    dataQuery,
+  ]);
+
+  if (e1 || e2) return NextResponse.json({ error: (e1 ?? e2)!.message }, { status: 500 });
 
   const rows = data ?? [];
-  const totalCount = rows.length;
-  const totalPyung = rows.reduce((s, r) => s + (r.pyung ?? 0), 0);
+  const totalPyung = rows.reduce((s, r) => s + ((r.pyung as number) ?? 0), 0);
+  const count = totalCount ?? 0;
 
   const days = Math.max(
     1,
-    Math.round(
-      (new Date(end).getTime() - new Date(start).getTime()) / (1000 * 60 * 60 * 24)
-    ) + 1
+    Math.round((new Date(end).getTime() - new Date(start).getTime()) / 86_400_000) + 1
   );
   const avgDailyPyung = totalPyung / days;
 
   const line1Count = rows.filter((r) => r.line === "1-LINE").length;
   const line2Count = rows.filter((r) => r.line === "2-LINE").length;
-  const line1Ratio = totalCount > 0 ? line1Count / totalCount : 0;
-  const line2Ratio = totalCount > 0 ? line2Count / totalCount : 0;
+  const line1Ratio = count > 0 ? line1Count / count : 0;
+  const line2Ratio = count > 0 ? line2Count / count : 0;
 
-  // 전월 대비 변화율: 동일 기간 길이를 이전 구간으로 조회
+  // 직전 동일 기간 대비 변화율
   const periodMs = new Date(end).getTime() - new Date(start).getTime();
   const prevEnd = new Date(new Date(start).getTime() - 1).toISOString().slice(0, 10);
-  const prevStart = new Date(new Date(start).getTime() - periodMs - 86400000)
-    .toISOString()
-    .slice(0, 10);
+  const prevStart = new Date(new Date(start).getTime() - periodMs - 86_400_000).toISOString().slice(0, 10);
 
   let prevQuery = supabase
     .from("production_records")
-    .select("pyung", { count: "exact", head: false })
+    .select("pyung")
     .gte("registered_at", toStartOfDay(prevStart))
-    .lte("registered_at", toEndOfDay(prevEnd));
-
+    .lte("registered_at", toEndOfDay(prevEnd))
+    .limit(MAX_ROWS);
   if (line !== "all") prevQuery = prevQuery.eq("line", line);
 
   const { data: prevData } = await prevQuery;
-  const prevPyung = (prevData ?? []).reduce((s, r) => s + (r.pyung ?? 0), 0);
-  const momChange =
-    prevPyung > 0 ? ((totalPyung - prevPyung) / prevPyung) * 100 : null;
+  const prevPyung = (prevData ?? []).reduce((s, r) => s + ((r.pyung as number) ?? 0), 0);
+  const momChange = prevPyung > 0 ? ((totalPyung - prevPyung) / prevPyung) * 100 : null;
 
   const result: KpiData = {
-    totalCount,
+    totalCount: count,
     totalPyung,
     avgDailyPyung,
     line1Ratio,

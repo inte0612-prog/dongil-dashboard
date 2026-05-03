@@ -23,6 +23,8 @@ export async function GET(req: NextRequest) {
     .lte("registered_at", toEndOfDay(end))
     .not("order_no", "eq", "");
 
+  query = query.limit(1_000_000);
+
   if (line !== "all") query = query.eq("line", line);
 
   const { data, error } = await query;

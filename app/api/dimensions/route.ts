@@ -25,6 +25,8 @@ export async function GET(req: NextRequest) {
     .not("width", "is", null)
     .not("height", "is", null);
 
+  query = query.limit(1_000_000);
+
   if (line !== "all") query = query.eq("line", line);
 
   const { data, error } = await query;

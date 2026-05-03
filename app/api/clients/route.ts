@@ -22,6 +22,8 @@ export async function GET(req: NextRequest) {
     .gte("registered_at", toStartOfDay(start))
     .lte("registered_at", toEndOfDay(end));
 
+  query = query.limit(1_000_000);
+
   if (line !== "all") query = query.eq("line", line);
 
   const { data, error } = await query;
