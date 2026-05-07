@@ -222,7 +222,7 @@ export default function PivotPage() {
                     <CartesianGrid strokeDasharray="3 3" />
                     <XAxis dataKey="period" angle={-40} textAnchor="end" tick={{ fontSize: 11 }} />
                     <YAxis tick={{ fontSize: 11 }} />
-                    <Tooltip formatter={(v: number) => [fmt(v, metric), ""]} />
+                    <Tooltip formatter={(v) => [fmt(Number(v ?? 0), metric), ""]} />
                     <Legend wrapperStyle={{ fontSize: 12 }} />
                     {data?.rows.map((row, i) => (
                       <Bar key={row.name} dataKey={row.name} stackId="a" fill={COLORS[i % COLORS.length]} />
@@ -293,7 +293,7 @@ export default function PivotPage() {
                     <CartesianGrid strokeDasharray="3 3" />
                     <XAxis dataKey="period" angle={-40} textAnchor="end" tick={{ fontSize: 11 }} />
                     <YAxis tick={{ fontSize: 11 }} />
-                    <Tooltip formatter={(v: number) => [fmt(v, metric), ""]} />
+                    <Tooltip formatter={(v) => [fmt(Number(v ?? 0), metric), ""]} />
                     <Legend wrapperStyle={{ fontSize: 12 }} />
                     {data?.rows.map((row, i) => (
                       <Line
@@ -315,7 +315,7 @@ export default function PivotPage() {
                     <CartesianGrid strokeDasharray="3 3" />
                     <XAxis dataKey="month" tick={{ fontSize: 11 }} />
                     <YAxis tick={{ fontSize: 11 }} />
-                    <Tooltip formatter={(v: number) => [fmt(v, metric), ""]} />
+                    <Tooltip formatter={(v) => [fmt(Number(v ?? 0), metric), ""]} />
                     <Legend wrapperStyle={{ fontSize: 12 }} />
                     <Bar dataKey="current" name="올해" fill="#3b82f6" radius={[3, 3, 0, 0]} />
                     <Bar dataKey="prev"    name="전년" fill="#94a3b8" radius={[3, 3, 0, 0]} />
