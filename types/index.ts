@@ -125,3 +125,13 @@ export interface PaginatedResponse<T> {
 export type TrendUnit = "day" | "week" | "month";
 export type LineFilter = "all" | "1-LINE" | "2-LINE";
 export type SortOrder = "asc" | "desc";
+
+export interface ProductionGoal {
+  id: string;
+  year: number;
+  month: number;
+  target_quantity: number | null;
+  target_area: number | null;
+  memo: string | null;
+  created_at: string;
+}

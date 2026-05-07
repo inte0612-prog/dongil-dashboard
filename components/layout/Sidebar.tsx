@@ -16,6 +16,7 @@ import {
   ClipboardList,
   Grid,
   Table,
+  Target,
   type LucideIcon,
 } from "lucide-react";
 
@@ -31,6 +32,7 @@ const ICON_MAP: Record<string, LucideIcon> = {
   ClipboardList,
   Grid,
   Table,
+  Target,
 };
 
 export default function Sidebar() {
