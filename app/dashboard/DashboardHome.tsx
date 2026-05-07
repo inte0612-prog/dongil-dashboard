@@ -2,17 +2,21 @@
 
 import { useFilter } from "@/hooks/useFilter";
 import KpiGrid from "@/components/dashboard/KpiGrid";
-import AnomalyBanner from "@/components/dashboard/AnomalyBanner";
-import DashboardExtra from "@/components/dashboard/DashboardExtra";
+import DashboardTrend from "@/components/dashboard/DashboardTrend";
+import DashboardTop from "@/components/dashboard/DashboardTop";
+import DashboardYoy from "@/components/dashboard/DashboardYoy";
+import DashboardConcentration from "@/components/dashboard/DashboardConcentration";
 
 export default function DashboardHome() {
   const { start, end, line } = useFilter();
 
   return (
     <div className="space-y-8">
-      <AnomalyBanner start={start} end={end} line={line} />
       <KpiGrid start={start} end={end} line={line} />
-      <DashboardExtra start={start} end={end} line={line} />
+      <DashboardTrend start={start} end={end} line={line} />
+      <DashboardTop start={start} end={end} line={line} />
+      <DashboardYoy start={start} end={end} line={line} />
+      <DashboardConcentration start={start} end={end} line={line} />
     </div>
   );
 }
