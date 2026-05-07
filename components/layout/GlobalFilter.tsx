@@ -1,5 +1,6 @@
 "use client";
 
+import { useEffect, useState } from "react";
 import { useFilter } from "@/hooks/useFilter";
 import { LINE_OPTIONS } from "@/lib/constants";
 import { getPresetRanges } from "@/lib/utils/dateUtils";
@@ -8,7 +9,18 @@ import DateRangePicker from "./DateRangePicker";
 
 export default function GlobalFilter() {
   const { start, end, line, setFilter } = useFilter();
-  const presets = getPresetRanges();
+  const [dataRange, setDataRange] = useState<{ min: string; max: string } | null>(null);
+
+  useEffect(() => {
+    fetch("/api/dashboard/data-range")
+      .then((r) => r.json())
+      .then((d) => setDataRange({ min: d.minDate, max: d.maxDate }))
+      .catch(() => {});
+  }, []);
+
+  const presets = getPresetRanges().map((p) =>
+    p.label === "전체" && dataRange ? { ...p, start: dataRange.min, end: dataRange.max } : p
+  );
   const activeLabel = presets.find((p) => p.start === start && p.end === end)?.label ?? null;
 
   return (

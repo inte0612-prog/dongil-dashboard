@@ -21,6 +21,38 @@ type TrendRow = {
   line2_count: number;
 };
 
+const RPC_PAGE_SIZE = 1000;
+
+async function fetchAllTrendRows(
+  supabase: Awaited<ReturnType<typeof createClient>>,
+  start: string,
+  end: string,
+  line: string
+) {
+  const allRows: TrendRow[] = [];
+  let from = 0;
+
+  while (true) {
+    const { data, error } = await supabase
+      .rpc("rpc_dashboard_daily_trend", {
+        p_start: start,
+        p_end: end,
+        p_line: line,
+      })
+      .range(from, from + RPC_PAGE_SIZE - 1);
+
+    if (error) return { data: null, error };
+
+    const chunk = (data ?? []) as TrendRow[];
+    allRows.push(...chunk);
+
+    if (chunk.length < RPC_PAGE_SIZE) break;
+    from += RPC_PAGE_SIZE;
+  }
+
+  return { data: allRows, error: null };
+}
+
 export async function GET(req: NextRequest) {
   const { searchParams } = req.nextUrl;
   const start = searchParams.get("start");
@@ -33,23 +65,26 @@ export async function GET(req: NextRequest) {
 
   const supabase = await createClient();
 
-  const { data, error } = await supabase.rpc("rpc_dashboard_daily_trend", {
-    p_start: start,
-    p_end: end,
-    p_line: line,
-  });
+  const { data, error } = await fetchAllTrendRows(supabase, start, end, line);
 
   if (error) {
     return NextResponse.json({ error: error.message }, { status: 500 });
   }
 
-  const rows = ((data ?? []) as TrendRow[]).map((r) => ({
+  const rawRows = ((data ?? []) as TrendRow[]).map((r) => ({
     day: r.day,
     count: Number(r.count ?? 0),
     pyung: Number(r.pyung ?? 0),
     line1: Number(r.line1_count ?? 0),
     line2: Number(r.line2_count ?? 0),
   }));
+
+  // 앞뒤 데이터 없는 구간 제거 — 실제 데이터 범위만 반환
+  let firstIdx = rawRows.findIndex((r) => r.count > 0);
+  if (firstIdx < 0) firstIdx = 0;
+  let lastIdx = rawRows.length - 1;
+  while (lastIdx > firstIdx && rawRows[lastIdx].count === 0) lastIdx--;
+  const rows = rawRows.slice(firstIdx, lastIdx + 1);
 
   const counts = rows.map((r) => r.count);
 

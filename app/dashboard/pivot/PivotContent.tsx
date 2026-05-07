@@ -65,15 +65,27 @@ export default function PivotContent() {
   const [topN,      setTopN]      = useState(10);
   const [tab,       setTab]       = useState(0);
   const [data,      setData]      = useState<PivotResp | null>(null);
-  const [loading,   setLoading]   = useState(false);
+  const [loading,   setLoading]   = useState(true);
+  const [error,     setError]     = useState<string | null>(null);
 
   const fetchData = useCallback(async () => {
-    if (!start || !end) return;
+    if (!start || !end) { setLoading(false); return; }
     setLoading(true);
-    const qs = new URLSearchParams({ start, end, line, unit, dimension, metric, topN: String(topN) });
-    const res = await fetch(`/api/pivot?${qs}`);
-    if (res.ok) setData(await res.json());
-    setLoading(false);
+    setError(null);
+    try {
+      const qs = new URLSearchParams({ start, end, line, unit, dimension, metric, topN: String(topN) });
+      const res = await fetch(`/api/pivot?${qs}`);
+      if (res.ok) {
+        setData(await res.json());
+      } else {
+        const body = await res.json().catch(() => ({}));
+        setError(body.error ?? `서버 오류 (${res.status})`);
+      }
+    } catch {
+      setError("네트워크 오류 — 잠시 후 다시 시도해주세요.");
+    } finally {
+      setLoading(false);
+    }
   }, [start, end, line, unit, dimension, metric, topN]);
 
   useEffect(() => { fetchData(); }, [fetchData]);
@@ -145,6 +157,13 @@ export default function PivotContent() {
           </select>
         </div>
       </div>
+
+      {/* 오류 메시지 */}
+      {error && (
+        <div className="rounded-md bg-destructive/10 px-4 py-3 text-sm text-destructive">
+          {error}
+        </div>
+      )}
 
       {/* KPI 카드 */}
       <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">

@@ -19,6 +19,44 @@ type YoyRow = {
   prev_count: number;
 };
 
+const RPC_PAGE_SIZE = 1000;
+
+async function fetchAllPivotRows(
+  supabase: Awaited<ReturnType<typeof createClient>>,
+  start: string,
+  end: string,
+  line: string,
+  unit: "day" | "month",
+  dimension: "client" | "item_code" | "line" | "registrar",
+  metric: "count" | "pyung"
+) {
+  const allRows: PivotBucketRow[] = [];
+  let from = 0;
+
+  while (true) {
+    const { data, error } = await supabase
+      .rpc("rpc_pivot_bucketed", {
+        p_start: start,
+        p_end: end,
+        p_line: line,
+        p_unit: unit,
+        p_dimension: dimension,
+        p_metric: metric,
+      })
+      .range(from, from + RPC_PAGE_SIZE - 1);
+
+    if (error) return { data: null, error };
+
+    const chunk = (data ?? []) as PivotBucketRow[];
+    allRows.push(...chunk);
+
+    if (chunk.length < RPC_PAGE_SIZE) break;
+    from += RPC_PAGE_SIZE;
+  }
+
+  return { data: allRows, error: null };
+}
+
 export async function GET(req: NextRequest) {
   const { searchParams } = req.nextUrl;
   const start = searchParams.get("start");
@@ -41,14 +79,7 @@ export async function GET(req: NextRequest) {
 
   const [{ data: pivotData, error: pivotError }, { data: kpiData, error: kpiError }, { data: yoyData, error: yoyError }] =
     await Promise.all([
-      supabase.rpc("rpc_pivot_bucketed", {
-        p_start: start,
-        p_end: end,
-        p_line: line,
-        p_unit: unit,
-        p_dimension: dimension,
-        p_metric: metric,
-      }),
+      fetchAllPivotRows(supabase, start, end, line, unit, dimension, metric),
       supabase.rpc("rpc_dashboard_kpi", {
         p_start: start,
         p_end: end,
