@@ -18,6 +18,7 @@ import {
   Table,
   Target,
   Upload,
+  BarChart2,
   type LucideIcon,
 } from "lucide-react";
 
@@ -35,6 +36,7 @@ const ICON_MAP: Record<string, LucideIcon> = {
   Table,
   Target,
   Upload,
+  BarChart2,
 };
 
 export default function Sidebar() {
