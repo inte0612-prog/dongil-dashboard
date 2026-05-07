@@ -8,7 +8,7 @@ export async function GET(req: NextRequest) {
   const start = searchParams.get("start");
   const end = searchParams.get("end");
   const line = searchParams.get("line") ?? "all";
-  const limit = Number(searchParams.get("limit") ?? 10);
+  const limit = Number(searchParams.get("limit") ?? 20);
   const sortBy = searchParams.get("sortBy") ?? "count";
 
   if (!start || !end) {
@@ -42,7 +42,7 @@ export async function GET(req: NextRequest) {
       avgPyung: 0,
     };
     existing.count += 1;
-    existing.totalPyung += row.pyung ?? 0;
+    existing.totalPyung += Number(row.pyung) || 0;
     map.set(key, existing);
   }
 

@@ -39,7 +39,7 @@ export async function GET(req: NextRequest) {
       totalPyung: 0,
     };
     existing.count += 1;
-    existing.totalPyung += row.pyung ?? 0;
+    existing.totalPyung += Number(row.pyung) || 0;
     map.set(key, existing);
   }
 

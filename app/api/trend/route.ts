@@ -56,14 +56,14 @@ export async function GET(req: NextRequest) {
     };
 
     existing.count += 1;
-    existing.pyung += row.pyung ?? 0;
+    existing.pyung += Number(row.pyung) || 0;
 
     if (row.line === "1-LINE") {
       existing.line1Count = (existing.line1Count ?? 0) + 1;
-      existing.line1Pyung = (existing.line1Pyung ?? 0) + (row.pyung ?? 0);
+      existing.line1Pyung = (existing.line1Pyung ?? 0) + (Number(row.pyung) || 0);
     } else if (row.line === "2-LINE") {
       existing.line2Count = (existing.line2Count ?? 0) + 1;
-      existing.line2Pyung = (existing.line2Pyung ?? 0) + (row.pyung ?? 0);
+      existing.line2Pyung = (existing.line2Pyung ?? 0) + (Number(row.pyung) || 0);
     }
 
     map.set(key, existing);

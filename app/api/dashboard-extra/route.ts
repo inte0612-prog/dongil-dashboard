@@ -58,7 +58,7 @@ export async function GET(req: NextRequest) {
     const ym = r.registered_at.slice(0, 7);
     const e = monthlyMap.get(ym) ?? { count: 0, pyung: 0 };
     e.count += 1;
-    e.pyung += (r.pyung as number) ?? 0;
+    e.pyung += Number(r.pyung) || 0;
     monthlyMap.set(ym, e);
   }
   const sortedYms = Array.from(monthlyMap.keys()).sort();

@@ -38,12 +38,12 @@ export async function GET(req: NextRequest) {
   const step = Math.max(1, Math.floor(rows.length / SCATTER_SAMPLE_SIZE));
   const scatter: DimensionScatterPoint[] = rows
     .filter((_, i) => i % step === 0)
-    .map((r) => ({ width: r.width, height: r.height, pyung: r.pyung ?? 0 }));
+    .map((r) => ({ width: r.width, height: r.height, pyung: Number(r.pyung) || 0 }));
 
   // 크기 분류
   const sizeClass: SizeClassData = { 소형: 0, 중형: 0, 대형: 0 };
   for (const r of rows) {
-    sizeClass[parseSizeClass(r.pyung ?? 0)]++;
+    sizeClass[parseSizeClass(Number(r.pyung) || 0)]++;
   }
 
   // 상위 치수 조합

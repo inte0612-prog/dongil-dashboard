@@ -67,7 +67,7 @@ export async function GET(req: NextRequest) {
 
   const getPeriod = (at: string) => (unit === "day" ? at.slice(0, 10) : at.slice(0, 7));
   const getVal = (r: { quantity?: number; pyung?: number }) =>
-    metric === "count" ? 1 : (r.pyung as number) ?? 0;
+    metric === "count" ? 1 : Number(r.pyung) || 0;
 
   // 피벗 집계
   const pivotMap = new Map<string, Map<string, number>>();
@@ -97,7 +97,7 @@ export async function GET(req: NextRequest) {
 
   // KPI
   const totalCount = rows.length;
-  const totalPyung = rows.reduce((s, r) => s + (r.pyung ?? 0), 0);
+  const totalPyung = rows.reduce((s, r) => s + (Number(r.pyung) || 0), 0);
   const kpi = {
     totalCount,
     totalPyung,

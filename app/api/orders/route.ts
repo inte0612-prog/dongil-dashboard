@@ -35,7 +35,7 @@ export async function GET(req: NextRequest) {
   for (const row of data ?? []) {
     const existing = map.get(row.order_no) ?? { count: 0, totalPyung: 0, dates: [] };
     existing.count += 1;
-    existing.totalPyung += row.pyung ?? 0;
+    existing.totalPyung += Number(row.pyung) || 0;
     existing.dates.push(row.registered_at);
     map.set(row.order_no, existing);
   }

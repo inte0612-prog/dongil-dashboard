@@ -8,7 +8,7 @@ export async function GET(req: NextRequest) {
   const start = searchParams.get("start");
   const end = searchParams.get("end");
   const line = searchParams.get("line") ?? "all";
-  const limit = Number(searchParams.get("limit") ?? 10);
+  const limit = Number(searchParams.get("limit") ?? 20);
 
   if (!start || !end) {
     return NextResponse.json({ error: "start, end 파라미터 필요" }, { status: 400 });
@@ -39,7 +39,7 @@ export async function GET(req: NextRequest) {
 
     const existing = clientMap.get(c) ?? { client: c, count: 0, totalPyung: 0 };
     existing.count += 1;
-    existing.totalPyung += row.pyung ?? 0;
+    existing.totalPyung += Number(row.pyung) || 0;
     clientMap.set(c, existing);
 
     const se = siteMap.get(s) ?? { site: s, count: 0 };
