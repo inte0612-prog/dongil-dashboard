@@ -6,37 +6,21 @@ import { cn } from "@/lib/utils";
 import { NAV_MENUS } from "@/lib/constants";
 import {
   LayoutDashboard,
-  TrendingUp,
-  Package,
-  Building2,
-  Users,
-  Clock,
-  Layers,
-  Ruler,
-  ClipboardList,
-  Grid,
   Table,
   Target,
   Upload,
   BarChart2,
+  Sparkles,
   type LucideIcon,
 } from "lucide-react";
 
 const ICON_MAP: Record<string, LucideIcon> = {
   LayoutDashboard,
-  TrendingUp,
-  Package,
-  Building2,
-  Users,
-  Clock,
-  Layers,
-  Ruler,
-  ClipboardList,
-  Grid,
   Table,
   Target,
   Upload,
   BarChart2,
+  Sparkles,
 };
 
 export default function Sidebar() {
