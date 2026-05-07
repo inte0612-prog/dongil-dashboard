@@ -1,4 +1,4 @@
-import { format, subMonths, subYears, startOfDay, endOfDay } from "date-fns";
+import { format, subDays, subMonths, subYears, startOfDay, endOfDay } from "date-fns";
 
 export function formatDate(date: Date | string): string {
   return format(new Date(date), "yyyy-MM-dd");
@@ -14,12 +14,15 @@ export function getDefaultDateRange(): { start: string; end: string } {
 
 export function getPresetRanges() {
   const today = new Date();
+  const end = formatDate(today);
   return [
-    { label: "3개월", start: formatDate(subMonths(today, 3)), end: formatDate(today) },
-    { label: "1년", start: formatDate(subYears(today, 1)), end: formatDate(today) },
-    { label: "3년", start: formatDate(subYears(today, 3)), end: formatDate(today) },
-    { label: "전체", start: "2020-01-01", end: formatDate(today) },
-  ] as const;
+    { label: "7일",   start: formatDate(subDays(today, 7)),    end },
+    { label: "30일",  start: formatDate(subDays(today, 30)),   end },
+    { label: "3개월", start: formatDate(subMonths(today, 3)),  end },
+    { label: "6개월", start: formatDate(subMonths(today, 6)),  end },
+    { label: "1년",   start: formatDate(subYears(today, 1)),   end },
+    { label: "전체",  start: "2020-01-01",                     end },
+  ];
 }
 
 export function toStartOfDay(dateStr: string): string {
