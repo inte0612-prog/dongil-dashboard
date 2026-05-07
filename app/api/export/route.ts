@@ -38,6 +38,7 @@ export async function GET(req: NextRequest) {
 
   if (line !== "all") query = query.eq("line", line);
   if (search) query = query.or(`item_name.ilike.%${search}%,client.ilike.%${search}%`);
+  query = query.limit(1_000_000);
 
   const { data, error } = await query;
   if (error) return NextResponse.json({ error: error.message }, { status: 500 });

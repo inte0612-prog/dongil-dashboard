@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useSearchParams } from "next/navigation";
 import { cn } from "@/lib/utils";
 import { NAV_MENUS } from "@/lib/constants";
 import {
@@ -35,12 +35,14 @@ const ICON_MAP: Record<string, LucideIcon> = {
 
 export default function Sidebar() {
   const pathname = usePathname();
+  const searchParams = useSearchParams();
+  const qs = searchParams.toString();
 
   return (
     <aside className="flex w-60 shrink-0 flex-col border-r bg-sidebar">
       <div className="flex h-14 items-center border-b px-5">
         <Link
-          href="/dashboard"
+          href={qs ? `/dashboard?${qs}` : "/dashboard"}
           className="text-sm font-semibold tracking-tight text-sidebar-foreground transition-opacity hover:opacity-70"
         >
           동일산업 생산 대시보드
@@ -59,7 +61,7 @@ export default function Sidebar() {
             return (
               <li key={menu.href}>
                 <Link
-                  href={menu.href}
+                  href={qs ? `${menu.href}?${qs}` : menu.href}
                   className={cn(
                     "flex items-center gap-3 rounded-md px-3 py-2 text-sm transition-colors",
                     isActive
