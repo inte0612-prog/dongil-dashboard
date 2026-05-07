@@ -17,6 +17,7 @@ import {
   Grid,
   Table,
   Target,
+  Upload,
   type LucideIcon,
 } from "lucide-react";
 
@@ -33,6 +34,7 @@ const ICON_MAP: Record<string, LucideIcon> = {
   Grid,
   Table,
   Target,
+  Upload,
 };
 
 export default function Sidebar() {

@@ -40,6 +40,7 @@ export const NAV_MENUS = [
   { label: "수주 추적", href: "/dashboard/orders", icon: "ClipboardList" },
   { label: "거래처 × 사양", href: "/dashboard/client-spec", icon: "Grid" },
   { label: "데이터 탐색", href: "/dashboard/records", icon: "Table" },
+  { label: "데이터 임포트", href: "/dashboard/import", icon: "Upload" },
   { label: "목표 설정", href: "/dashboard/goals", icon: "Target" },
 ] as const;
 

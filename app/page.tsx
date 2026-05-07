@@ -36,11 +36,10 @@ const FEATURE_CARDS = [
   {
     icon: Upload,
     title: "데이터 임포트",
-    description: "준비 중인 기능입니다. 추후 CSV/TXT 업로드로 데이터를 직접 추가할 수 있습니다.",
-    href: "/dashboard",
+    description: "CSV/TXT 파일을 업로드하여 생산 레코드를 직접 추가합니다. 중복은 자동으로 스킵됩니다.",
+    href: "/dashboard/import",
     color: "text-orange-500",
     bg: "bg-orange-50",
-    disabled: true,
   },
 ];
 
@@ -109,19 +108,13 @@ export default function HomePage() {
                     <h3 className="mb-1 font-semibold text-foreground">{card.title}</h3>
                     <p className="text-sm text-muted-foreground leading-relaxed">{card.description}</p>
                   </div>
-                  {card.disabled ? (
-                    <span className="self-start rounded-md border px-3 py-1.5 text-xs text-muted-foreground cursor-not-allowed">
-                      준비 중
-                    </span>
-                  ) : (
-                    <Link
-                      href={card.href}
-                      className="self-start inline-flex items-center gap-1.5 rounded-md bg-primary px-3 py-1.5 text-xs font-medium text-primary-foreground transition-opacity hover:opacity-90"
-                    >
-                      바로가기
-                      <ArrowRight className="h-3 w-3" />
-                    </Link>
-                  )}
+                  <Link
+                    href={card.href}
+                    className="self-start inline-flex items-center gap-1.5 rounded-md bg-primary px-3 py-1.5 text-xs font-medium text-primary-foreground transition-opacity hover:opacity-90"
+                  >
+                    바로가기
+                    <ArrowRight className="h-3 w-3" />
+                  </Link>
                 </div>
               );
             })}
