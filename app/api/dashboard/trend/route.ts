@@ -47,13 +47,14 @@ export async function GET(req: NextRequest) {
     dayMap.set(day, e);
   }
 
-  // 날짜 범위 내 모든 날 채우기
+  // 날짜 범위 내 모든 날 채우기 (문자열 기반으로 timezone 무관하게 처리)
   const days: string[] = [];
-  const cur = new Date(start);
-  const endDate = new Date(end);
-  while (cur <= endDate) {
-    days.push(cur.toISOString().slice(0, 10));
-    cur.setDate(cur.getDate() + 1);
+  let cur = start;
+  while (cur <= end) {
+    days.push(cur);
+    const [y, m, d] = cur.split("-").map(Number);
+    const next = new Date(Date.UTC(y, m - 1, d + 1));
+    cur = next.toISOString().slice(0, 10);
   }
 
   const counts = days.map((d) => dayMap.get(d)?.count ?? 0);

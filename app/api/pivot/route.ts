@@ -32,7 +32,7 @@ export async function GET(req: NextRequest) {
 
   let query = supabase
     .from("production_records")
-    .select("client, item_code, item_name, line, registrar, registered_at, quantity, pyung")
+    .select("client, item_code, item_name, line, registrar, registered_at, quantity, pyung", { count: "exact" })
     .gte("registered_at", toStartOfDay(start))
     .lte("registered_at", toEndOfDay(end))
     .limit(1_000_000);
@@ -52,7 +52,7 @@ export async function GET(req: NextRequest) {
     .limit(1_000_000);
   if (line !== "all") prevQuery = prevQuery.eq("line", line);
 
-  const [{ data, error }, { data: prevData }] = await Promise.all([query, prevQuery]);
+  const [{ data, count: exactCount, error }, { data: prevData }] = await Promise.all([query, prevQuery]);
   if (error) return NextResponse.json({ error: error.message }, { status: 500 });
 
   const rows = (data ?? []) as Row[];
@@ -96,7 +96,7 @@ export async function GET(req: NextRequest) {
   }));
 
   // KPI
-  const totalCount = rows.length;
+  const totalCount = exactCount ?? rows.length;
   const totalPyung = rows.reduce((s, r) => s + (Number(r.pyung) || 0), 0);
   const kpi = {
     totalCount,

@@ -1,4 +1,4 @@
-import { format, subDays, subMonths, subYears, startOfDay, endOfDay } from "date-fns";
+import { format, subDays, subMonths, subYears } from "date-fns";
 
 export function formatDate(date: Date | string): string {
   return format(new Date(date), "yyyy-MM-dd");
@@ -26,11 +26,13 @@ export function getPresetRanges() {
 }
 
 export function toStartOfDay(dateStr: string): string {
-  return startOfDay(new Date(dateStr)).toISOString();
+  const [y, m, d] = dateStr.split("-").map(Number);
+  return new Date(Date.UTC(y, m - 1, d, 0, 0, 0, 0)).toISOString();
 }
 
 export function toEndOfDay(dateStr: string): string {
-  return endOfDay(new Date(dateStr)).toISOString();
+  const [y, m, d] = dateStr.split("-").map(Number);
+  return new Date(Date.UTC(y, m - 1, d, 23, 59, 59, 999)).toISOString();
 }
 
 export const WEEKDAY_LABELS = ["일", "월", "화", "수", "목", "금", "토"];

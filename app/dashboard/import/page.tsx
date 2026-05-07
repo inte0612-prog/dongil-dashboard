@@ -54,7 +54,29 @@ function normalizeRow(raw: Record<string, string>): ParsedRow {
   };
 }
 
+function splitLine(line: string, delimiter: string): string[] {
+  if (delimiter === "\t") return line.split("\t").map((v) => v.trim());
+  const result: string[] = [];
+  let cur = "";
+  let inQuote = false;
+  for (let i = 0; i < line.length; i++) {
+    const ch = line[i];
+    if (ch === '"') {
+      if (inQuote && line[i + 1] === '"') { cur += '"'; i++; }
+      else inQuote = !inQuote;
+    } else if (ch === "," && !inQuote) {
+      result.push(cur.trim());
+      cur = "";
+    } else {
+      cur += ch;
+    }
+  }
+  result.push(cur.trim());
+  return result;
+}
+
 function parseFileText(text: string, filename: string): ParsedRow[] {
+  // BOM 제거 (UTF-8, UTF-16 모두)
   const clean = text.replace(/^﻿/, "");
   const firstLine = clean.split("\n")[0];
   const isTab = filename.toLowerCase().endsWith(".txt") || firstLine.includes("\t");
@@ -63,11 +85,11 @@ function parseFileText(text: string, filename: string): ParsedRow[] {
   const lines = clean.split(/\r?\n/).filter((l) => l.trim());
   if (lines.length < 2) return [];
 
-  const headers = lines[0].split(delimiter).map((h) => h.trim().replace(/^"|"$/g, ""));
+  const headers = splitLine(lines[0], delimiter).map((h) => h.replace(/^"|"$/g, "").trim());
 
   const rows: ParsedRow[] = [];
   for (let i = 1; i < lines.length; i++) {
-    const values = lines[i].split(delimiter).map((v) => v.trim().replace(/^"|"$/g, ""));
+    const values = splitLine(lines[i], delimiter).map((v) => v.replace(/^"|"$/g, "").trim());
     const raw: Record<string, string> = {};
     headers.forEach((h, idx) => {
       const field = COLUMN_MAP[h] ?? h;
@@ -107,12 +129,23 @@ export default function ImportPage() {
 
     const reader = new FileReader();
     reader.onload = (e) => {
-      const text = e.target?.result as string;
+      const buffer = e.target?.result as ArrayBuffer;
+      // UTF-8 시도, 실패하거나 깨진 문자 있으면 EUC-KR(CP949) 재시도
+      let text: string;
+      try {
+        text = new TextDecoder("utf-8", { fatal: true }).decode(buffer);
+      } catch {
+        try {
+          text = new TextDecoder("euc-kr").decode(buffer);
+        } catch {
+          text = new TextDecoder("utf-8", { fatal: false }).decode(buffer);
+        }
+      }
       const parsed = parseFileText(text, f.name);
       setRows(parsed);
       setStatus("parsed");
     };
-    reader.readAsText(f, "utf-8");
+    reader.readAsArrayBuffer(f);
   }, []);
 
   const onDrop = useCallback(
