@@ -1,9 +1,12 @@
-import { createClient } from "@/lib/supabase/server";
+﻿import { createClient } from "@/lib/supabase/server";
 import { NextRequest, NextResponse } from "next/server";
-import { toStartOfDay, toEndOfDay } from "@/lib/utils/dateUtils";
 import { KpiData } from "@/types";
 
-const MAX_ROWS = 1_000_000;
+function shiftDate(dateStr: string, days: number): string {
+  const [y, m, d] = dateStr.split("-").map(Number);
+  const dt = new Date(Date.UTC(y, m - 1, d + days));
+  return dt.toISOString().slice(0, 10);
+}
 
 export async function GET(req: NextRequest) {
   const { searchParams } = req.nextUrl;
@@ -12,76 +15,55 @@ export async function GET(req: NextRequest) {
   const line = searchParams.get("line") ?? "all";
 
   if (!start || !end) {
-    return NextResponse.json({ error: "start, end 파라미터 필요" }, { status: 400 });
+    return NextResponse.json({ error: "start, end parameters are required" }, { status: 400 });
   }
 
   const supabase = await createClient();
 
-  // 전체 건수 (head: true — 데이터 미전송, 빠름)
-  let countQuery = supabase
-    .from("production_records")
-    .select("*", { count: "exact", head: true })
-    .gte("registered_at", toStartOfDay(start))
-    .lte("registered_at", toEndOfDay(end));
-  if (line !== "all") countQuery = countQuery.eq("line", line);
+  const { data: kpiData, error: kpiError } = await supabase.rpc("rpc_dashboard_kpi", {
+    p_start: start,
+    p_end: end,
+    p_line: line,
+  });
 
-  // 평수·라인 집계용 데이터
-  let dataQuery = supabase
-    .from("production_records")
-    .select("pyung, line")
-    .gte("registered_at", toStartOfDay(start))
-    .lte("registered_at", toEndOfDay(end))
-    .limit(MAX_ROWS);
-  if (line !== "all") dataQuery = dataQuery.eq("line", line);
-
-  const [{ count: totalCount, error: e1 }, { data, error: e2 }] = await Promise.all([
-    countQuery,
-    dataQuery,
-  ]);
-
-  if (e1 || e2) return NextResponse.json({ error: (e1 ?? e2)!.message }, { status: 500 });
-
-  const rows = data ?? [];
-  const totalPyung = rows.reduce((s, r) => s + (Number(r.pyung) || 0), 0);
-  const count = totalCount ?? rows.length;
+  if (kpiError) {
+    return NextResponse.json({ error: kpiError.message }, { status: 500 });
+  }
 
   const days = Math.max(
     1,
     Math.round((new Date(end).getTime() - new Date(start).getTime()) / 86_400_000) + 1
   );
-  const avgDailyPyung = totalPyung / days;
 
-  const line1Count = rows.filter((r) => r.line === "1-LINE").length;
-  const line2Count = rows.filter((r) => r.line === "2-LINE").length;
-  const total = rows.length;
-  const line1Ratio = total > 0 ? line1Count / total : 0;
-  const line2Ratio = total > 0 ? line2Count / total : 0;
+  const prevEnd = shiftDate(start, -1);
+  const prevStart = shiftDate(start, -days);
 
-  // 직전 동일 기간 대비 변화율
-  const periodMs = new Date(end).getTime() - new Date(start).getTime();
-  const prevEnd = new Date(new Date(start).getTime() - 1).toISOString().slice(0, 10);
-  const prevStart = new Date(new Date(start).getTime() - periodMs - 86_400_000).toISOString().slice(0, 10);
+  const { data: prevKpiData, error: prevError } = await supabase.rpc("rpc_dashboard_kpi", {
+    p_start: prevStart,
+    p_end: prevEnd,
+    p_line: line,
+  });
 
-  let prevQuery = supabase
-    .from("production_records")
-    .select("pyung")
-    .gte("registered_at", toStartOfDay(prevStart))
-    .lte("registered_at", toEndOfDay(prevEnd))
-    .limit(MAX_ROWS);
-  if (line !== "all") prevQuery = prevQuery.eq("line", line);
+  if (prevError) {
+    return NextResponse.json({ error: prevError.message }, { status: 500 });
+  }
 
-  const { data: prevData } = await prevQuery;
-  const prevPyung = (prevData ?? []).reduce((s, r) => s + (Number(r.pyung) || 0), 0);
+  const cur = (kpiData?.[0] ?? {}) as Record<string, number | null>;
+  const prev = (prevKpiData?.[0] ?? {}) as Record<string, number | null>;
+
+  const totalPyung = Number(cur.total_pyung ?? 0);
+  const prevPyung = Number(prev.total_pyung ?? 0);
   const momChange = prevPyung > 0 ? ((totalPyung - prevPyung) / prevPyung) * 100 : null;
 
   const result: KpiData = {
-    totalCount: count,
+    totalCount: Number(cur.total_count ?? 0),
     totalPyung,
-    avgDailyPyung,
-    line1Ratio,
-    line2Ratio,
+    avgDailyPyung: Number(cur.avg_daily_pyung ?? 0),
+    line1Ratio: Number(cur.line1_ratio ?? 0),
+    line2Ratio: Number(cur.line2_ratio ?? 0),
     momChange,
   };
 
   return NextResponse.json(result);
 }
+
