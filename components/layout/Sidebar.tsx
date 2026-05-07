@@ -42,10 +42,10 @@ export default function Sidebar() {
     <aside className="flex w-60 shrink-0 flex-col border-r bg-sidebar">
       <div className="flex h-14 items-center border-b px-5">
         <Link
-          href={qs ? `/dashboard?${qs}` : "/dashboard"}
+          href="/"
           className="text-sm font-semibold tracking-tight text-sidebar-foreground transition-opacity hover:opacity-70"
         >
-          동일산업 생산 대시보드
+          동일유리 생산 대시보드
         </Link>
       </div>
 
