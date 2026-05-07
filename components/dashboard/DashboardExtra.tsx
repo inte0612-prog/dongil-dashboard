@@ -99,8 +99,8 @@ export default function DashboardExtra({
                 <XAxis dataKey="label" angle={-35} textAnchor="end" tick={{ fontSize: 11 }} />
                 <YAxis tick={{ fontSize: 11 }} />
                 <Tooltip
-                  formatter={(v: number, name: string) => [
-                    v.toLocaleString() + "건",
+                  formatter={(v, name) => [
+                    Number(v ?? 0).toLocaleString() + "건",
                     name === "actual" ? "실적" : "목표",
                   ]}
                 />
@@ -138,7 +138,7 @@ export default function DashboardExtra({
               <CartesianGrid strokeDasharray="3 3" />
               <XAxis dataKey="month" tick={{ fontSize: 11 }} />
               <YAxis tick={{ fontSize: 11 }} />
-              <Tooltip formatter={(v: number) => [v.toLocaleString() + "건", ""]} />
+              <Tooltip formatter={(v) => [Number(v ?? 0).toLocaleString() + "건", ""]} />
               <Legend wrapperStyle={{ fontSize: 12 }} />
               <Bar dataKey="current" name="올해"  fill="#3b82f6" radius={[3,3,0,0]} />
               <Bar dataKey="prev"    name="전년"  fill="#94a3b8" radius={[3,3,0,0]} />
@@ -158,7 +158,7 @@ export default function DashboardExtra({
               <CartesianGrid strokeDasharray="3 3" />
               <XAxis dataKey="label" tick={{ fontSize: 11 }} />
               <YAxis tick={{ fontSize: 11 }} unit="%" />
-              <Tooltip formatter={(v: number) => [`${v}%`, "성장률"]} />
+              <Tooltip formatter={(v) => [`${Number(v ?? 0)}%`, "성장률"]} />
               <ReferenceLine y={0} stroke="#ef4444" strokeDasharray="4 4" />
               <Line
                 type="monotone" dataKey="growth" name="성장률"
@@ -197,7 +197,7 @@ export default function DashboardExtra({
                 type="category" dataKey="name" tick={{ fontSize: 11 }}
                 width={115} tickFormatter={(v: string) => v.length > 14 ? v.slice(0, 14) + "…" : v}
               />
-              <Tooltip formatter={(v: number) => [v.toLocaleString() + "건", "생산 건수"]} />
+              <Tooltip formatter={(v) => [Number(v ?? 0).toLocaleString() + "건", "생산 건수"]} />
               <Bar dataKey="total" shape={<LollipopShape />} barSize={20}>
                 {clientAbc.map((d, i) => (
                   <Cell key={i} fill={ABC_COLOR[d.grade]} />
