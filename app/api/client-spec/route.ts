@@ -9,7 +9,7 @@ export async function GET(req: NextRequest) {
   const start = searchParams.get("start");
   const end = searchParams.get("end");
   const line = searchParams.get("line") ?? "all";
-  const topN = Number(searchParams.get("topN") ?? 10);
+  const topN = Number(searchParams.get("topN") ?? 20);
 
   if (!start || !end) {
     return NextResponse.json({ error: "start, end 파라미터 필요" }, { status: 400 });

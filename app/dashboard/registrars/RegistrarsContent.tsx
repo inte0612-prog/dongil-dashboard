@@ -28,7 +28,12 @@ export default function RegistrarsContent() {
   }
 
   const chartData = Array.from(registrarMap.entries())
-    .map(([name, v]) => ({ name, ...v, total: v["1-LINE"] + v["2-LINE"] }))
+    .map(([name, v]) => ({
+      name,
+      line1: v["1-LINE"],
+      line2: v["2-LINE"],
+      total: v["1-LINE"] + v["2-LINE"],
+    }))
     .sort((a, b) => b.total - a.total)
     .slice(0, 20);
 

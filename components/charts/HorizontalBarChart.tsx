@@ -1,14 +1,8 @@
 "use client";
 
 import {
-  BarChart,
-  Bar,
-  XAxis,
-  YAxis,
-  CartesianGrid,
-  Tooltip,
-  ResponsiveContainer,
-  Cell,
+  BarChart, Bar, XAxis, YAxis, CartesianGrid,
+  Tooltip, ResponsiveContainer, Cell,
 } from "recharts";
 
 interface HorizontalBarChartProps {
@@ -22,40 +16,46 @@ export default function HorizontalBarChart({
   color = "#3b82f6",
   formatter,
 }: HorizontalBarChartProps) {
+  if (data.length === 0) {
+    return <p className="py-10 text-center text-sm text-muted-foreground">데이터 없음</p>;
+  }
+
   const fmt = formatter ?? ((v: number) => v.toLocaleString());
-  const barHeight = 32;
-  const height = Math.max(200, data.length * barHeight + 40);
+  const height = Math.max(200, data.length * 36 + 40);
+  const maxLabel = Math.max(...data.map((d) => d.label.length));
+  const yAxisWidth = Math.min(180, Math.max(120, maxLabel * 8));
 
   return (
-    <ResponsiveContainer width="100%" height={height}>
-      <BarChart
-        data={data}
-        layout="vertical"
-        margin={{ top: 4, right: 60, left: 8, bottom: 4 }}
-      >
-        <CartesianGrid strokeDasharray="3 3" horizontal={false} stroke="hsl(var(--border))" />
-        <XAxis type="number" tick={{ fontSize: 11 }} tickFormatter={fmt} />
-        <YAxis
-          type="category"
-          dataKey="label"
-          tick={{ fontSize: 11 }}
-          width={120}
-          tickLine={false}
-        />
-        <Tooltip
-          formatter={(value) => [fmt(Number(value)), ""]}
-          contentStyle={{ fontSize: 12 }}
-        />
-        <Bar dataKey="value" radius={[0, 4, 4, 0]} maxBarSize={24}>
-          {data.map((_, i) => (
-            <Cell
-              key={i}
-              fill={color}
-              opacity={1 - (i / data.length) * 0.4}
-            />
-          ))}
-        </Bar>
-      </BarChart>
-    </ResponsiveContainer>
+    <div style={{ width: "100%" }}>
+      <ResponsiveContainer width="100%" height={height}>
+        <BarChart
+          data={data}
+          layout="vertical"
+          margin={{ top: 4, right: 70, left: 4, bottom: 4 }}
+        >
+          <CartesianGrid strokeDasharray="3 3" horizontal={false} stroke="hsl(var(--border))" />
+          <XAxis type="number" tick={{ fontSize: 11 }} tickFormatter={fmt} />
+          <YAxis
+            type="category"
+            dataKey="label"
+            tick={{ fontSize: 11 }}
+            width={yAxisWidth}
+            tickLine={false}
+            tickFormatter={(v: string) =>
+              v.length > 18 ? v.slice(0, 18) + "…" : v
+            }
+          />
+          <Tooltip
+            formatter={(value) => [fmt(Number(value)), ""]}
+            contentStyle={{ fontSize: 12 }}
+          />
+          <Bar dataKey="value" radius={[0, 4, 4, 0]} maxBarSize={24} minPointSize={2}>
+            {data.map((_, i) => (
+              <Cell key={i} fill={color} opacity={1 - (i / data.length) * 0.4} />
+            ))}
+          </Bar>
+        </BarChart>
+      </ResponsiveContainer>
+    </div>
   );
 }

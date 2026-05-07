@@ -42,8 +42,8 @@ export async function GET(req: NextRequest) {
   if (e1 || e2) return NextResponse.json({ error: (e1 ?? e2)!.message }, { status: 500 });
 
   const rows = data ?? [];
-  const totalPyung = rows.reduce((s, r) => s + ((r.pyung as number) ?? 0), 0);
-  const count = totalCount ?? 0;
+  const totalPyung = rows.reduce((s, r) => s + (Number(r.pyung) || 0), 0);
+  const count = totalCount ?? rows.length;
 
   const days = Math.max(
     1,
@@ -53,8 +53,9 @@ export async function GET(req: NextRequest) {
 
   const line1Count = rows.filter((r) => r.line === "1-LINE").length;
   const line2Count = rows.filter((r) => r.line === "2-LINE").length;
-  const line1Ratio = count > 0 ? line1Count / count : 0;
-  const line2Ratio = count > 0 ? line2Count / count : 0;
+  const total = rows.length;
+  const line1Ratio = total > 0 ? line1Count / total : 0;
+  const line2Ratio = total > 0 ? line2Count / total : 0;
 
   // 직전 동일 기간 대비 변화율
   const periodMs = new Date(end).getTime() - new Date(start).getTime();
@@ -70,7 +71,7 @@ export async function GET(req: NextRequest) {
   if (line !== "all") prevQuery = prevQuery.eq("line", line);
 
   const { data: prevData } = await prevQuery;
-  const prevPyung = (prevData ?? []).reduce((s, r) => s + ((r.pyung as number) ?? 0), 0);
+  const prevPyung = (prevData ?? []).reduce((s, r) => s + (Number(r.pyung) || 0), 0);
   const momChange = prevPyung > 0 ? ((totalPyung - prevPyung) / prevPyung) * 100 : null;
 
   const result: KpiData = {

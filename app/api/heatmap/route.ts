@@ -31,9 +31,10 @@ export async function GET(req: NextRequest) {
   const map = new Map<string, number>();
 
   for (const row of data ?? []) {
-    const d = new Date(row.registered_at);
-    const hour = d.getHours();
-    const weekday = d.getDay();
+    // KST(UTC+9) 기준으로 시간/요일 계산
+    const kst = new Date(new Date(row.registered_at).getTime() + 9 * 60 * 60 * 1000);
+    const hour = kst.getUTCHours();
+    const weekday = kst.getUTCDay();
     const key = `${weekday}_${hour}`;
     map.set(key, (map.get(key) ?? 0) + 1);
   }

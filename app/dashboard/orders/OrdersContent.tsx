@@ -39,6 +39,8 @@ export default function OrdersContent() {
         <p className="mb-3 text-sm font-semibold">납기 소요일 분포</p>
         {loading ? (
           <div className="h-[260px] animate-pulse rounded-lg bg-muted" />
+        ) : histData.every((d) => d.count === 0) ? (
+          <p className="py-10 text-center text-sm text-muted-foreground">수주 추적 데이터 없음</p>
         ) : (
           <HistogramChart data={histData} color="#8b5cf6" />
         )}

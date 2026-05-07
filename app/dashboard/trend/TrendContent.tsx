@@ -4,7 +4,6 @@ import { useEffect, useState } from "react";
 import { useFilter } from "@/hooks/useFilter";
 import TrendLineChart from "@/components/charts/TrendLineChart";
 import { TrendDataPoint, TrendUnit } from "@/types";
-import { TREND_UNITS } from "@/lib/constants";
 import { cn } from "@/lib/utils";
 
 const METRIC_OPTIONS = [
@@ -14,12 +13,22 @@ const METRIC_OPTIONS = [
 
 type Metric = "count" | "pyung";
 
+function autoUnit(start: string, end: string): TrendUnit {
+  const days = Math.round(
+    (new Date(end).getTime() - new Date(start).getTime()) / 86_400_000
+  );
+  if (days > 365 * 2) return "month";
+  if (days > 90)      return "week";
+  return "day";
+}
+
 export default function TrendContent() {
   const { start, end, line } = useFilter();
-  const [unit, setUnit] = useState<TrendUnit>("day");
   const [metric, setMetric] = useState<Metric>("count");
-  const [data, setData] = useState<TrendDataPoint[]>([]);
+  const [data, setData]     = useState<TrendDataPoint[]>([]);
   const [loading, setLoading] = useState(true);
+
+  const unit = autoUnit(start, end);
 
   useEffect(() => {
     setLoading(true);
@@ -29,14 +38,15 @@ export default function TrendContent() {
       .finally(() => setLoading(false));
   }, [start, end, line, unit]);
 
+  const unitLabel = unit === "day" ? "일별" : unit === "week" ? "주별" : "월별";
+
   return (
     <div className="space-y-4">
-      <div className="flex flex-wrap items-center gap-3">
-        <ToggleGroup
-          options={TREND_UNITS}
-          value={unit}
-          onChange={(v) => setUnit(v as TrendUnit)}
-        />
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <span className="text-xs text-muted-foreground">
+          집계 단위: <span className="font-medium text-foreground">{unitLabel}</span>
+          （기간에 따라 자동 조정）
+        </span>
         <ToggleGroup
           options={METRIC_OPTIONS}
           value={metric}
@@ -48,7 +58,7 @@ export default function TrendContent() {
         {loading ? (
           <div className="h-[340px] animate-pulse rounded-lg bg-muted" />
         ) : (
-          <TrendLineChart data={data} metric={metric} line={line} />
+          <TrendLineChart data={data} metric={metric} line={line} unit={unit} />
         )}
       </div>
 
