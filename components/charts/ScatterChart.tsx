@@ -52,9 +52,8 @@ export default function ScatterChart({ data }: ScatterChartProps) {
           />
           <Scatter
             data={data}
-            shape={(props: Record<string, unknown>) => {
-              const cx = props.cx as number | undefined;
-              const cy = props.cy as number | undefined;
+            shape={(props) => {
+              const { cx, cy } = props as { cx?: number; cy?: number };
               if (cx == null || cy == null) return <g />;
               return (
                 <circle
