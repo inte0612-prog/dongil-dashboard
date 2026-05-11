@@ -1,6 +1,6 @@
-import { createClient } from "@/lib/supabase/server";
+import { createServiceClient } from "@/lib/supabase/server";
 import { NextRequest, NextResponse } from "next/server";
-import { toStartOfDay, toEndOfDay } from "@/lib/utils/dateUtils";
+import { genDays } from "@/lib/utils/dateUtils";
 
 function movingAvg(arr: number[], i: number, window: number): number {
   const slice = arr.slice(Math.max(0, i - window + 1), i + 1);
@@ -14,6 +14,8 @@ function stdDev(arr: number[], i: number, window: number): number {
   return Math.sqrt(variance);
 }
 
+type RpcRow = { day: string; cnt: number; pyung_sum: number; line1_cnt: number; line2_cnt: number };
+
 export async function GET(req: NextRequest) {
   const { searchParams } = req.nextUrl;
   const start = searchParams.get("start");
@@ -22,56 +24,39 @@ export async function GET(req: NextRequest) {
 
   if (!start || !end) return NextResponse.json({ error: "start/end 필요" }, { status: 400 });
 
-  const supabase = await createClient();
+  const supabase = createServiceClient();
 
-  let q = supabase
-    .from("production_records")
-    .select("registered_at, pyung, line")
-    .gte("registered_at", toStartOfDay(start))
-    .lte("registered_at", toEndOfDay(end))
-    .limit(1_000_000);
-  if (line !== "all") q = q.eq("line", line);
+  const { data, error } = await supabase.rpc("get_daily_trend", {
+    p_start: start,
+    p_end:   end,
+    p_line:  line,
+  });
 
-  const { data, error } = await q;
   if (error) return NextResponse.json({ error: error.message }, { status: 500 });
 
-  // 일별 집계
-  const dayMap = new Map<string, { count: number; pyung: number; line1: number; line2: number }>();
-  for (const r of data ?? []) {
-    const day = r.registered_at.slice(0, 10);
-    const e = dayMap.get(day) ?? { count: 0, pyung: 0, line1: 0, line2: 0 };
-    e.count += 1;
-    e.pyung += Number(r.pyung) || 0;
-    if (r.line === "1-LINE") e.line1 += 1;
-    else if (r.line === "2-LINE") e.line2 += 1;
-    dayMap.set(day, e);
+  const rpcMap = new Map<string, RpcRow>();
+  for (const row of (data ?? []) as RpcRow[]) {
+    rpcMap.set(row.day, row);
   }
 
-  // 날짜 범위 내 모든 날 채우기
-  const days: string[] = [];
-  const cur = new Date(start);
-  const endDate = new Date(end);
-  while (cur <= endDate) {
-    days.push(cur.toISOString().slice(0, 10));
-    cur.setDate(cur.getDate() + 1);
-  }
-
-  const counts = days.map((d) => dayMap.get(d)?.count ?? 0);
+  const days = genDays(start, end);
+  const counts = days.map((d) => rpcMap.get(d)?.cnt ?? 0);
 
   const result = days.map((day, i) => {
-    const entry = dayMap.get(day) ?? { count: 0, pyung: 0, line1: 0, line2: 0 };
-    const ma7  = movingAvg(counts, i, 7);
-    const ma30 = movingAvg(counts, i, 30);
-    const sd30 = stdDev(counts, i, 30);
-    const isAnomaly = sd30 > 0 && Math.abs(entry.count - ma30) > 2 * sd30;
+    const row   = rpcMap.get(day);
+    const count = row?.cnt ?? 0;
+    const ma7   = movingAvg(counts, i, 7);
+    const ma30  = movingAvg(counts, i, 30);
+    const sd30  = stdDev(counts, i, 30);
+    const isAnomaly = sd30 > 0 && Math.abs(count - ma30) > 2 * sd30;
     return {
       day,
-      count: entry.count,
-      pyung: Math.round(entry.pyung * 10) / 10,
-      line1: entry.line1,
-      line2: entry.line2,
-      ma7:   Math.round(ma7 * 10) / 10,
-      ma30:  Math.round(ma30 * 10) / 10,
+      count,
+      pyung:  Math.round((row?.pyung_sum ?? 0) * 10) / 10,
+      line1:  row?.line1_cnt ?? 0,
+      line2:  row?.line2_cnt ?? 0,
+      ma7:    Math.round(ma7 * 10) / 10,
+      ma30:   Math.round(ma30 * 10) / 10,
       isAnomaly,
     };
   });

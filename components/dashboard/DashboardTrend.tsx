@@ -96,7 +96,22 @@ export default function DashboardTrend({ start, end, line }: Props) {
           )}
           <Line type="monotone" dataKey="ma7"  name="7일 이동평균"  stroke="#f97316" dot={false} strokeWidth={1.5} strokeDasharray="4 2" />
           <Line type="monotone" dataKey="ma30" name="30일 이동평균" stroke="#22c55e" dot={false} strokeWidth={1.5} strokeDasharray="6 3" />
-          <Scatter data={anomalies} dataKey="count" name="이상치" fill="#ef4444" shape="circle" />
+          <Scatter
+            data={anomalies}
+            dataKey="count"
+            name="이상치"
+            shape={(props) => {
+              const { cx, cy } = props as { cx?: number; cy?: number };
+              if (cx == null || cy == null) return <g />;
+              return (
+                <circle
+                  cx={cx} cy={cy} r={5}
+                  fill="#ef4444" fillOpacity={0.35}
+                  stroke="#ef4444" strokeOpacity={0.5} strokeWidth={1}
+                />
+              );
+            }}
+          />
         </ComposedChart>
       </ResponsiveContainer>
 

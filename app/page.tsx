@@ -21,7 +21,7 @@ const FEATURE_CARDS = [
     icon: TrendingUp,
     title: "다차원 분석",
     description: "기간별 생산 추이, 품목·거래처·사양·치수 등 다양한 축으로 데이터를 분석합니다.",
-    href: "/dashboard/trend",
+    href: "/dashboard/pivot",
     color: "text-emerald-500",
     bg: "bg-emerald-50",
   },
