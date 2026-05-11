@@ -1,4 +1,4 @@
-import { createClient } from "@/lib/supabase/server";
+import { createServiceClient } from "@/lib/supabase/server";
 import { NextRequest, NextResponse } from "next/server";
 
 export async function POST(req: NextRequest) {
@@ -9,7 +9,7 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "rows 필수" }, { status: 400 });
   }
 
-  const supabase = await createClient();
+  const supabase = createServiceClient();
 
   const { data, error } = await supabase
     .from("production_records")
