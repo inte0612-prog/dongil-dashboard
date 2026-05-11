@@ -184,7 +184,7 @@ export default function AiContent() {
         ...prev.slice(0, -1),
         {
           role: "assistant",
-          answer:    data.answer   ?? "응답을 가져오지 못했습니다.",
+          answer:    data.answer   ?? `[오류] ${data.error ?? "응답을 가져오지 못했습니다."}`,
           sql:       data.sql      ?? null,
           insights:  data.insights ?? [],
           tableData: data.tableData ?? [],
