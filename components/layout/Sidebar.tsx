@@ -13,6 +13,7 @@ import {
   Sparkles,
   type LucideIcon,
 } from "lucide-react";
+import LogoutButton from "./LogoutButton";
 
 const ICON_MAP: Record<string, LucideIcon> = {
   LayoutDashboard,
@@ -68,8 +69,9 @@ export default function Sidebar() {
         </ul>
       </nav>
 
-      <div className="border-t px-5 py-3">
-        <p className="text-xs text-muted-foreground">오창공장 MES · 465,399건</p>
+      <div className="border-t px-3 py-3 space-y-1">
+        <LogoutButton />
+        <p className="px-3 text-xs text-muted-foreground">오창공장 MES · 465,399건</p>
       </div>
     </aside>
   );

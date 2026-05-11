@@ -15,7 +15,7 @@ export function formatDateTime(date: Date | string): string {
 }
 
 export function getDefaultDateRange(): { start: string; end: string } {
-  return { start: "2020-01-01", end: formatDate(new Date()) };
+  return { start: "2024-01-01", end: formatDate(new Date()) };
 }
 
 export function getPresetRanges() {
