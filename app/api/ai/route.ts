@@ -120,7 +120,7 @@ export async function POST(req: NextRequest) {
         "Authorization": `Bearer ${OPENAI_KEY}`,
       },
       body: JSON.stringify({
-        model: "gpt-4o-mini",
+        model: "gpt-5.4", // fallback: "gpt-4o-mini"
         messages: chatMessages,
         temperature: 0.2,
         max_tokens: 2048,
@@ -161,7 +161,7 @@ export async function POST(req: NextRequest) {
         method: "POST",
         headers: { "Content-Type": "application/json", "Authorization": `Bearer ${OPENAI_KEY}` },
         body: JSON.stringify({
-          model: "gpt-4o-mini",
+          model: "gpt-5.4", // fallback: "gpt-4o-mini"
           messages: [
             {
               role: "system",
