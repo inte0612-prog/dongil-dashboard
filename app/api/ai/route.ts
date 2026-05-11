@@ -17,7 +17,7 @@ function buildSystemPrompt(
   context: { totalCount: number; totalPyung: number; topClients: string; topItems: string }
 ): string {
   const lineFilter = line === "all" ? "" : ` AND line = '${line}'`;
-  const lineLabel  = line === "all" ? "전체 라인" : line;
+  const lineLabel = line === "all" ? "전체 라인" : line;
   return `당신은 동일유리 생산관리 시스템의 데이터 분석 AI 어시스턴트입니다.
 
 === 현재 선택된 필터 ===
@@ -79,9 +79,9 @@ async function fetchContext(start: string, end: string, line: string) {
     adminSupabase.rpc("execute_select", { query_text: `SELECT item_name, COUNT(*) AS cnt FROM production_records ${base} GROUP BY item_name ORDER BY cnt DESC LIMIT 10` }),
   ]);
 
-  const stats    = (statsRes.data as { cnt: number; pyung: number }[])?.[0] ?? { cnt: 0, pyung: 0 };
-  const clients  = (clientRes.data as { client: string; cnt: number }[] ?? []).map((r, i) => `${i + 1}.${r.client}(${Number(r.cnt).toLocaleString()}건)`).join(", ");
-  const items    = (itemRes.data  as { item_name: string; cnt: number }[] ?? []).map((r, i) => `${i + 1}.${r.item_name}(${Number(r.cnt).toLocaleString()}건)`).join(", ");
+  const stats = (statsRes.data as { cnt: number; pyung: number }[])?.[0] ?? { cnt: 0, pyung: 0 };
+  const clients = (clientRes.data as { client: string; cnt: number }[] ?? []).map((r, i) => `${i + 1}.${r.client}(${Number(r.cnt).toLocaleString()}건)`).join(", ");
+  const items = (itemRes.data as { item_name: string; cnt: number }[] ?? []).map((r, i) => `${i + 1}.${r.item_name}(${Number(r.cnt).toLocaleString()}건)`).join(", ");
 
   return { totalCount: Number(stats.cnt), totalPyung: Number(stats.pyung), topClients: clients || "없음", topItems: items || "없음" };
 }
@@ -100,9 +100,9 @@ export async function POST(req: NextRequest) {
 
     const today = new Date();
     const defaultStart = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, "0")}-01`;
-    const defaultEnd   = today.toISOString().slice(0, 10);
+    const defaultEnd = today.toISOString().slice(0, 10);
     const s = start ?? defaultStart;
-    const e = end   ?? defaultEnd;
+    const e = end ?? defaultEnd;
 
     const context = await fetchContext(s, e, line);
     const systemPrompt = buildSystemPrompt(s, e, line, context);
@@ -120,7 +120,7 @@ export async function POST(req: NextRequest) {
         "Authorization": `Bearer ${OPENAI_KEY}`,
       },
       body: JSON.stringify({
-        model: "gpt-5.4", // fallback: "gpt-4o-mini"
+        model: "gpt-4o-mini",
         messages: chatMessages,
         temperature: 0.2,
         max_tokens: 2048,
@@ -151,7 +151,7 @@ export async function POST(req: NextRequest) {
     if (parsed.sql) {
       const result = await runSql(parsed.sql);
       tableData = result.rows;
-      sqlError  = result.error;
+      sqlError = result.error;
     }
 
     // SQL 결과로 2차 답변 생성 — 실제 값 전체 나열 지시
@@ -161,7 +161,7 @@ export async function POST(req: NextRequest) {
         method: "POST",
         headers: { "Content-Type": "application/json", "Authorization": `Bearer ${OPENAI_KEY}` },
         body: JSON.stringify({
-          model: "gpt-5.4", // fallback: "gpt-4o-mini"
+          model: "gpt-4o-mini",
           messages: [
             {
               role: "system",
@@ -186,8 +186,8 @@ export async function POST(req: NextRequest) {
     }
 
     return NextResponse.json({
-      answer:   finalAnswer,
-      sql:      parsed.sql ?? null,
+      answer: finalAnswer,
+      sql: parsed.sql ?? null,
       insights: parsed.insights ?? [],
       tableData,
       sqlError,

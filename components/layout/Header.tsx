@@ -19,7 +19,7 @@ export default function Header() {
 
   return (
     <header className="flex h-14 shrink-0 items-center justify-between border-b bg-background px-6">
-      <Link href="/dashboard" className="text-sm font-semibold text-foreground hover:opacity-70 transition-opacity">{title}</Link>
+      <Link href={pathname} className="text-sm font-semibold text-foreground hover:opacity-70 transition-opacity">{title}</Link>
       <Suspense>
         <GlobalFilter />
       </Suspense>
