@@ -210,7 +210,7 @@ export default function AiContent() {
           <h1 className="text-sm font-semibold">AI 분석</h1>
         </div>
         <p className="mt-0.5 text-xs text-muted-foreground">
-          Google Gemini 기반 · 생산 데이터를 자연어로 질문하세요
+          OpenAI 기반 · 생산 데이터를 자연어로 질문하세요
         </p>
       </div>
 
