@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useRef, useEffect } from "react";
+import { useFilter } from "@/hooks/useFilter";
 import { Send, Sparkles, ChevronDown, ChevronUp, Lightbulb } from "lucide-react";
 
 type Message = {
@@ -137,6 +138,7 @@ function AssistantBubble({ msg }: { msg: Message }) {
 }
 
 export default function AiContent() {
+  const { start, end, line } = useFilter();
   const [messages, setMessages] = useState<Message[]>([
     {
       role: "assistant",
@@ -176,7 +178,7 @@ export default function AiContent() {
       const res = await fetch("/api/ai", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ question, messages: buildHistory() }),
+        body: JSON.stringify({ question, messages: buildHistory(), start, end, line }),
       });
       const data = await res.json();
 
