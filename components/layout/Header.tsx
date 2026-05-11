@@ -2,6 +2,7 @@
 
 import { Suspense } from "react";
 import { usePathname } from "next/navigation";
+import Link from "next/link";
 import { NAV_MENUS } from "@/lib/constants";
 import GlobalFilter from "./GlobalFilter";
 
@@ -18,7 +19,7 @@ export default function Header() {
 
   return (
     <header className="flex h-14 shrink-0 items-center justify-between border-b bg-background px-6">
-      <h1 className="text-sm font-semibold text-foreground">{title}</h1>
+      <Link href="/dashboard" className="text-sm font-semibold text-foreground hover:opacity-70 transition-opacity">{title}</Link>
       <Suspense>
         <GlobalFilter />
       </Suspense>
