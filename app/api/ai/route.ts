@@ -120,8 +120,30 @@ export async function POST(req: NextRequest) {
       sqlError  = result.error;
     }
 
+    // SQL 결과가 있으면 실제 값으로 2차 답변 생성
+    let finalAnswer = parsed.answer ?? "";
+    if (tableData.length > 0) {
+      const answerRes = await fetch(OPENAI_URL, {
+        method: "POST",
+        headers: { "Content-Type": "application/json", "Authorization": `Bearer ${OPENAI_KEY}` },
+        body: JSON.stringify({
+          model: "gpt-4o-mini",
+          messages: [
+            { role: "system", content: "사용자의 질문과 SQL 실행 결과를 바탕으로 한국어로 명확하게 답변하세요. 수치는 실제 값을 사용하고 단위를 명시하세요." },
+            { role: "user", content: `질문: ${question}\nSQL 결과: ${JSON.stringify(tableData)}` },
+          ],
+          temperature: 0.2,
+          max_tokens: 1024,
+        }),
+      });
+      if (answerRes.ok) {
+        const answerData = await answerRes.json();
+        finalAnswer = answerData.choices?.[0]?.message?.content ?? finalAnswer;
+      }
+    }
+
     return NextResponse.json({
-      answer:   parsed.answer ?? "",
+      answer:   finalAnswer,
       sql:      parsed.sql ?? null,
       insights: parsed.insights ?? [],
       tableData,
