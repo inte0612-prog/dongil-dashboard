@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useRef, useEffect } from "react";
+import { useFilter } from "@/hooks/useFilter";
 import { Send, Sparkles, ChevronDown, ChevronUp, Lightbulb } from "lucide-react";
 
 type Message = {
@@ -137,6 +138,7 @@ function AssistantBubble({ msg }: { msg: Message }) {
 }
 
 export default function AiContent() {
+  const { start, end, line } = useFilter();
   const [messages, setMessages] = useState<Message[]>([
     {
       role: "assistant",
@@ -176,7 +178,7 @@ export default function AiContent() {
       const res = await fetch("/api/ai", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ question, messages: buildHistory() }),
+        body: JSON.stringify({ question, messages: buildHistory(), start, end, line }),
       });
       const data = await res.json();
 
@@ -184,7 +186,7 @@ export default function AiContent() {
         ...prev.slice(0, -1),
         {
           role: "assistant",
-          answer:    data.answer   ?? "응답을 가져오지 못했습니다.",
+          answer:    data.answer   ?? `[오류] ${data.error ?? "응답을 가져오지 못했습니다."}`,
           sql:       data.sql      ?? null,
           insights:  data.insights ?? [],
           tableData: data.tableData ?? [],
@@ -210,7 +212,7 @@ export default function AiContent() {
           <h1 className="text-sm font-semibold">AI 분석</h1>
         </div>
         <p className="mt-0.5 text-xs text-muted-foreground">
-          Google Gemini 기반 · 생산 데이터를 자연어로 질문하세요
+          OpenAI 기반 · 생산 데이터를 자연어로 질문하세요
         </p>
       </div>
 

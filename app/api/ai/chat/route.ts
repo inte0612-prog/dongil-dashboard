@@ -1,8 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
-import { GoogleGenerativeAI } from "@google/generative-ai";
 import { createClient } from "@/lib/supabase/server";
 
-const genAI = new GoogleGenerativeAI(process.env.GOOGLE_AI_API_KEY!);
+const OPENAI_KEY = process.env.OPENAI_API_KEY ?? "";
+const OPENAI_URL = "https://api.openai.com/v1/chat/completions";
 
 type PivotBucketRow = { period: string; dim: string; value: number };
 
@@ -89,17 +89,36 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "message, start, end는 필수입니다." }, { status: 400 });
     }
 
+    if (!OPENAI_KEY) return NextResponse.json({ error: "API 키 미설정" }, { status: 500 });
+
     const { kpi, topClients, topItems } = await fetchContext(start, end, line);
     const systemPrompt = buildSystemPrompt(start, end, line, kpi, topClients, topItems);
 
-    const model = genAI.getGenerativeModel({
-      model: "gemini-3.1-flash-lite",
-      systemInstruction: systemPrompt,
+    const chatMessages = [
+      { role: "system", content: systemPrompt },
+      ...history.map((h: { role: "user" | "model"; parts: { text: string }[] }) => ({
+        role: h.role === "user" ? "user" : "assistant",
+        content: h.parts.map((p) => p.text).join(""),
+      })),
+      { role: "user", content: message },
+    ];
+
+    const res = await fetch(OPENAI_URL, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "Authorization": `Bearer ${OPENAI_KEY}`,
+      },
+      body: JSON.stringify({ model: "gpt-4o-mini", messages: chatMessages, temperature: 0.3 }),
     });
 
-    const chat = model.startChat({ history });
-    const result = await chat.sendMessage(message);
-    const text = result.response.text();
+    if (!res.ok) {
+      const err = await res.text();
+      return NextResponse.json({ error: `OpenAI 오류: ${err}` }, { status: 500 });
+    }
+
+    const data = await res.json();
+    const text: string = data.choices?.[0]?.message?.content ?? "";
 
     return NextResponse.json({ text });
   } catch (err) {
