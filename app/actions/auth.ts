@@ -41,12 +41,12 @@ export async function loginAction(
     httpOnly: true,                                        // JS 접근 차단
     secure: process.env.NODE_ENV === "production",        // HTTPS에서만 전송
     sameSite: "lax",                                      // CSRF 방어
-    maxAge: 60 * 60 * 24 * 7,                            // 7일 유지
+    // maxAge 미설정 → 세션 쿠키 (브라우저 종료 시 자동 삭제)
     path: "/",
   });
 
-  // 메인 페이지로 이동
-  redirect("/");
+  // 대시보드로 이동 (login=1 → SessionGuard가 sessionStorage 플래그 세팅)
+  redirect("/dashboard?login=1");
 }
 
 /**
