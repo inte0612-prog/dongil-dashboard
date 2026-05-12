@@ -1,4 +1,4 @@
-﻿import { createClient } from "@/lib/supabase/server";
+﻿import { createServiceClient } from "@/lib/supabase/server";
 import { NextRequest, NextResponse } from "next/server";
 
 type PivotBucketRow = {
@@ -75,7 +75,7 @@ export async function GET(req: NextRequest) {
     return NextResponse.json({ error: "start, end parameters are required" }, { status: 400 });
   }
 
-  const supabase = await createClient();
+  const supabase = createServiceClient();
 
   const [{ data: pivotData, error: pivotError }, { data: kpiData, error: kpiError }, { data: yoyData, error: yoyError }] =
     await Promise.all([

@@ -1,4 +1,4 @@
-import { createClient } from "@/lib/supabase/server";
+import { createServiceClient } from "@/lib/supabase/server";
 import { NextRequest, NextResponse } from "next/server";
 import { toStartOfDay, toEndOfDay } from "@/lib/utils/dateUtils";
 
@@ -27,7 +27,7 @@ export async function GET(req: NextRequest) {
     return NextResponse.json({ error: "start, end 파라미터 필요" }, { status: 400 });
   }
 
-  const supabase = await createClient();
+  const supabase = createServiceClient();
 
   let query = supabase
     .from("production_records")

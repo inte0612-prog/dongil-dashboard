@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { createClient } from "@/lib/supabase/server";
+import { createServiceClient } from "@/lib/supabase/server";
 
 const OPENAI_KEY = process.env.OPENAI_API_KEY ?? "";
 const OPENAI_URL = "https://api.openai.com/v1/chat/completions";
@@ -19,7 +19,7 @@ function aggregateDims(rows: PivotBucketRow[], topN = 10) {
 }
 
 async function fetchContext(start: string, end: string, line: string) {
-  const supabase = await createClient();
+  const supabase = createServiceClient();
 
   const [kpiRes, pivotClientRes, pivotItemRes] = await Promise.all([
     supabase.rpc("rpc_dashboard_kpi", { p_start: start, p_end: end, p_line: line }),
