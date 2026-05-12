@@ -1,4 +1,4 @@
-﻿import { createClient } from "@/lib/supabase/server";
+﻿import { createServiceClient } from "@/lib/supabase/server";
 import { NextRequest, NextResponse } from "next/server";
 
 type PivotBucketRow = {
@@ -22,7 +22,7 @@ type YoyRow = {
 const RPC_PAGE_SIZE = 1000;
 
 async function fetchAllPivotRows(
-  supabase: Awaited<ReturnType<typeof createClient>>,
+  supabase: ReturnType<typeof createServiceClient>,
   start: string,
   end: string,
   line: string,
@@ -75,7 +75,7 @@ export async function GET(req: NextRequest) {
     return NextResponse.json({ error: "start, end parameters are required" }, { status: 400 });
   }
 
-  const supabase = await createClient();
+  const supabase = createServiceClient();
 
   const [{ data: pivotData, error: pivotError }, { data: kpiData, error: kpiError }, { data: yoyData, error: yoyError }] =
     await Promise.all([

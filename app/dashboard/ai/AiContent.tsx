@@ -235,22 +235,21 @@ export default function AiContent() {
       </div>
 
       {/* 추천 질문 */}
-      {messages.length <= 1 && (
-        <div className="border-t bg-background px-6 py-3">
-          <p className="mb-2 text-xs font-medium text-muted-foreground">추천 질문</p>
-          <div className="flex flex-wrap gap-2">
-            {SUGGESTED.map((q) => (
-              <button
-                key={q}
-                onClick={() => sendMessage(q)}
-                className="rounded-full border bg-background px-3 py-1.5 text-xs transition-colors hover:bg-accent"
-              >
-                {q}
-              </button>
-            ))}
-          </div>
+      <div className="border-t bg-background px-6 py-3">
+        <p className="mb-2 text-xs font-medium text-muted-foreground">추천 질문</p>
+        <div className="flex flex-wrap gap-2">
+          {SUGGESTED.map((q) => (
+            <button
+              key={q}
+              onClick={() => sendMessage(q)}
+              disabled={loading}
+              className="rounded-full border bg-background px-3 py-1.5 text-xs transition-colors hover:bg-accent disabled:opacity-40"
+            >
+              {q}
+            </button>
+          ))}
         </div>
-      )}
+      </div>
 
       {/* 입력창 */}
       <div className="border-t bg-background px-6 py-4">

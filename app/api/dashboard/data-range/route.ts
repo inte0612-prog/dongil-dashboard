@@ -1,9 +1,9 @@
-import { createClient } from "@/lib/supabase/server";
+import { createServiceClient } from "@/lib/supabase/server";
 import { NextResponse } from "next/server";
 import { formatDate } from "@/lib/utils/dateUtils";
 
 export async function GET() {
-  const supabase = await createClient();
+  const supabase = createServiceClient();
 
   const [{ data: first }, { data: last }] = await Promise.all([
     supabase
