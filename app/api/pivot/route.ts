@@ -19,7 +19,20 @@ type YoyRow = {
   prev_count: number;
 };
 
+type Dimension = "client" | "item_code" | "line" | "registrar";
+
 const RPC_PAGE_SIZE = 1000;
+
+function normalizeDimensionName(rawDim: string | null | undefined, dimension: Dimension) {
+  const dim = rawDim?.trim() || "(미입력)";
+
+  if (dimension !== "item_code") {
+    return dim;
+  }
+
+  const withoutItemCode = dim.replace(/^P\d+\s+/, "").trim();
+  return withoutItemCode || "(미입력)";
+}
 
 async function fetchAllPivotRows(
   supabase: ReturnType<typeof createServiceClient>,
@@ -27,7 +40,7 @@ async function fetchAllPivotRows(
   end: string,
   line: string,
   unit: "day" | "month",
-  dimension: "client" | "item_code" | "line" | "registrar",
+  dimension: Dimension,
   metric: "count" | "pyung"
 ) {
   const allRows: PivotBucketRow[] = [];
@@ -63,11 +76,7 @@ export async function GET(req: NextRequest) {
   const end = searchParams.get("end");
   const line = searchParams.get("line") ?? "all";
   const unit = (searchParams.get("unit") ?? "month") as "day" | "month";
-  const dimension = (searchParams.get("dimension") ?? "client") as
-    | "client"
-    | "item_code"
-    | "line"
-    | "registrar";
+  const dimension = (searchParams.get("dimension") ?? "client") as Dimension;
   const metric = (searchParams.get("metric") ?? "count") as "count" | "pyung";
   const topN = Number(searchParams.get("topN") ?? 10);
 
@@ -105,7 +114,7 @@ export async function GET(req: NextRequest) {
 
   for (const r of rows) {
     const period = r.period;
-    const dim = r.dim || "(미입력)";
+    const dim = normalizeDimensionName(r.dim, dimension);
     const val = Number(r.value ?? 0);
 
     periodSet.add(period);

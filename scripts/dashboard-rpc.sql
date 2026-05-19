@@ -159,7 +159,7 @@ with src as (
     end as period,
     case
       when p_dimension = 'client' then coalesce(client, '(미입력)')
-      when p_dimension = 'item_code' then coalesce(item_code, '(미입력)') || ' ' || coalesce(item_name, '')
+      when p_dimension = 'item_code' then coalesce(nullif(item_name, ''), '(미입력)')
       when p_dimension = 'line' then coalesce(line, '(미입력)')
       when p_dimension = 'registrar' then coalesce(registrar, '(미입력)')
       else coalesce(client, '(미입력)')

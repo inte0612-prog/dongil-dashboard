@@ -38,7 +38,7 @@ type PivotResp = {
 const UNIT_OPTS   = [{ label: "월별", value: "month" }, { label: "일별", value: "day" }] as const;
 const DIM_OPTS    = [
   { label: "거래처",   value: "client"    },
-  { label: "품목코드", value: "item_code" },
+  { label: "품목명", value: "item_code" },
   { label: "라인",     value: "line"      },
   { label: "등록자",   value: "registrar" },
 ] as const;
